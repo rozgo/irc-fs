@@ -11,11 +11,13 @@ Build irc-fs from the provided .sln file. The solution is configured for .NET 4.
 irc-fs supports two main modes of operation: synchronous and event-based. An `IrcClient` can be toggled between the modes using `IrcClient.StartEvent` and `IrcClient.StopEvent`. Receiving messages synchronously will not work when the event is active. A basic client might look like the following:
 
 ```fsharp
+#r "IrcFs"
+
 let channels = ["#channel"; "#channel2"]
 use client = new Net.IrcClient("irc.example.com", 6667)
 
 do client.WriteMessage (IrcMessage.nick "nickname")
-    client.WriteMessage (IrcMessage.user "username" "0" "real name")
+   client.WriteMessage (IrcMessage.user "username" "0" "real name")
 
 // an example of processing messages synchronously
 let rec process_motd () =
@@ -41,4 +43,4 @@ client.StartEvent()
 
 ### License
 
-irc-FS is available under the MIT license.
+irc-fs is available under the MIT license. For more information, see the [license file](https://github.com/JahTheDev/irc-fs/blob/master/LICENSE.md).

@@ -26,7 +26,7 @@ type IrcClient private (server: string, port: int, client: TcpClient, data_strea
     let mutable msg_processor = None
     
     let reader = new StreamReader(data_stream) |> TextReader.Synchronized
-    let writer = new StreamWriter(data_stream) 
+    let writer = new StreamWriter(data_stream)
     do writer.AutoFlush <- true
 
     new(server: string, port: int, ?ssl: bool, ?validate_cert_callback: RemoteCertificateValidationCallback) = 

@@ -34,9 +34,11 @@ type IrcMessage =
                 | [] -> sb.ToString()
             loop args
 
+        let prefix = Option.fold (fun _ pfx -> sprintf ":%O " pfx) "" this.Prefix
         match this with
-        | IrcMessage(prefix, cmd, args) -> 
-            let prefix = Option.fold (fun _ pfx -> sprintf ":%O " pfx) "" prefix
+        | IrcMessage(_, cmd, []) ->
+            sprintf "%s%s" prefix cmd
+        | IrcMessage(_, cmd, args) -> 
             sprintf "%s%s %s" prefix cmd (concat_irc_args args)
     
     member this.Prefix = 
