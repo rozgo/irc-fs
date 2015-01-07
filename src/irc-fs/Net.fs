@@ -26,8 +26,7 @@ type IrcClient private (server: string, port: int, client: TcpClient, data_strea
     let mutable msg_processor = None
     
     let reader = new StreamReader(data_stream) |> TextReader.Synchronized
-    let writer = new StreamWriter(data_stream)
-    do writer.AutoFlush <- true
+    let writer = new StreamWriter(data_stream, AutoFlush = true)
 
     new(server: string, port: int, ?ssl: bool, ?validate_cert_callback: RemoteCertificateValidationCallback) = 
         let client = new TcpClient(server, port)
@@ -88,6 +87,8 @@ type IrcClient private (server: string, port: int, client: TcpClient, data_strea
                     })
                 |> Some
 
+            msg_processor.Value.Error.Add(fun ex -> raise ex)
+
     member this.StopEvent() =
         throwIfDisposed disposed
         msg_event_cts.Cancel()
@@ -135,7 +136,6 @@ type IrcClient private (server: string, port: int, client: TcpClient, data_strea
 
     interface IDisposable with
         member this.Dispose() = 
-            
             do disposed <- true
                client.Close()
                dispose [ reader; writer; ]

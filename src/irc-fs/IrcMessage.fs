@@ -35,6 +35,7 @@ type IrcMessage =
             loop args
 
         let prefix = Option.fold (fun _ pfx -> sprintf ":%O " pfx) "" this.Prefix
+
         match this with
         | IrcMessage(_, cmd, []) ->
             sprintf "%s%s" prefix cmd
