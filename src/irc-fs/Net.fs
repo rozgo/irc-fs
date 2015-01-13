@@ -18,15 +18,37 @@ let inline private throwIfDisposed<'T> predicate =
 
 let private no_ssl_error_callback = new RemoteCertificateValidationCallback(fun _ _ _ errors -> errors = SslPolicyErrors.None)
 
-type IrcClient private (server: string, port: int, client: TcpClient, data_stream: Stream) = 
+type IrcClient private (server: string, port: int, client: TcpClient, data_stream: Stream) as _this = 
     let mutable disposed = false
 
     let msg_event = new Event<IrcMessage>()
-    let mutable  msg_event_cts = new CancellationTokenSource()
-    let mutable msg_processor = None
     
     let reader = new StreamReader(data_stream) |> TextReader.Synchronized
     let writer = new StreamWriter(data_stream, AutoFlush = true)
+
+    let msg_processor_active = ref false
+    let msg_processor = MailboxProcessor<bool>.Start(fun inbox ->
+        let rec loop enabled =
+            async {
+                if _this.Connected then 
+                    match enabled with
+                    | false ->
+                        let! new_state = inbox.Receive()
+                        msg_processor_active := new_state
+                        do! loop new_state
+                    | true ->
+                        if inbox.CurrentQueueLength > 0 then
+                            let! new_state = inbox.Receive()
+                            msg_processor_active := new_state
+                            do! loop new_state
+                        else
+                            let! message = reader.ReadLineAsync() |> Async.AwaitTask
+                            msg_event.Trigger (IrcMessage.Parse(message))
+                            do! loop true
+            }
+        loop false)
+
+    do msg_processor.Error.Add(fun ex -> raise ex)
 
     new(server: string, port: int, ?ssl: bool, ?validate_cert_callback: RemoteCertificateValidationCallback) = 
         let client = new TcpClient(server, port)
@@ -63,7 +85,9 @@ type IrcClient private (server: string, port: int, client: TcpClient, data_strea
                     |> Async.Ignore
             return new IrcClient(server, port, client, data_stream)
         }
+
     member this.Server = server
+
     member this.Port = port
     
     [<CLIEvent>]
@@ -75,71 +99,58 @@ type IrcClient private (server: string, port: int, client: TcpClient, data_strea
     
     member this.StartEvent() = 
         throwIfDisposed disposed
-        match msg_processor with
-        | Some _ -> invalidOp "An event loop is already started"
-        | None -> 
-            msg_processor <- 
-                MailboxProcessor<unit>.Start(fun inbox ->
-                    async {
-                       while this.Connected && not msg_event_cts.Token.IsCancellationRequested do
-                            let! message = reader.ReadLineAsync() |> Async.AwaitTask
-                            msg_event.Trigger (IrcMessage.Parse(message))
-                    })
-                |> Some
-
-            msg_processor.Value.Error.Add(fun ex -> raise ex)
+        msg_processor.Post true
 
     member this.StopEvent() =
         throwIfDisposed disposed
-        msg_event_cts.Cancel()
-        Option.iter(fun agent -> (agent :> IDisposable).Dispose()) msg_processor
-        msg_processor <- None
-        msg_event_cts <- new CancellationTokenSource()
+        msg_processor.Post false
+
+    member this.ReadLine() = 
+        throwIfDisposed disposed
+        if !msg_processor_active then invalidOp "This operation cannot be performed while the MessageReceived event is active"
+
+        reader.ReadLine()
 
     member this.ReadLineAsync() = 
         throwIfDisposed disposed
-        if msg_processor.IsSome then invalidOp "This operation cannot be performed while the MessageReceived event is active"
+        if !msg_processor_active then invalidOp "This operation cannot be performed while the MessageReceived event is active"
 
-        reader.ReadLineAsync() |> Async.AwaitTask
-    
+        reader.ReadLineAsync() 
+        |> Async.AwaitTask
+
+    member this.WriteLine(line: string) = 
+        throwIfDisposed disposed
+        writer.WriteLine line
+            
     member this.WriteLineAsync(line: string) = 
         throwIfDisposed disposed
-
-        writer.WriteLineAsync(line)
+        writer.WriteLineAsync line
         |> Async.AwaitIAsyncResult
         |> Async.Ignore
     
-    member this.ReadLine() = 
-        this.ReadLineAsync() 
-        |> Async.RunSynchronously
-
-    member this.WriteLine(line: string) = 
-        this.WriteLineAsync(line)
-        |> Async.RunSynchronously
+    member this.ReadMessage() = 
+        this.ReadLine()
+        |> IrcMessage.Parse
 
     member this.ReadMessageAsync() = 
         async { let! message = this.ReadLineAsync()
                 return IrcMessage.Parse message }
+
+    member this.WriteMessage(message: IrcMessage) = 
+        message.ToString()
+        |> this.WriteLine
 
     member this.WriteMessageAsync(message: IrcMessage) = 
         async { 
             do! this.WriteLineAsync(message.ToString())
         }
 
-    member this.ReadMessage() = 
-        this.ReadMessageAsync() 
-        |> Async.RunSynchronously
-
-    member this.WriteMessage(message: IrcMessage) = 
-        this.WriteMessageAsync(message)
-        |> Async.RunSynchronously
-
     interface IDisposable with
         member this.Dispose() = 
             do disposed <- true
                client.Close()
-               dispose [ reader; writer; ]
-               Option.iter(fun agent -> (agent :> IDisposable).Dispose()) msg_processor
+               this.StopEvent()
+               dispose [ reader; writer; msg_processor ]
 
                match data_stream with
                | :? SslStream as sslStream -> (sslStream :> IDisposable).Dispose()
