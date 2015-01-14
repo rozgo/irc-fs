@@ -1,3 +1,6 @@
+### 1.0.4 - January 14 2015
+* Added the FAKE build system
+
 ### 1.0.3 - January 13 2015
 * Fixed a bug that prevented the `IrcClient.MessageReceived` event from stopping
 * Performance improvements for synchronous message reading methods on `IrcClient`

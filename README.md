@@ -4,7 +4,7 @@ irc-fs is an IRC client library for F#. It provides a simple framework for conne
 
 ### Installation
 
-Build irc-fs from the provided .sln file. The solution is configured for .NET 4.5.3 and F# 4.0 by default, but will build with earlier framework versions. The FParsec NuGet package is used to parse IRC messages.
+Build irc-fs from the provided .sln file, `build.cmd` or `build.fsx`. The solution is configured for .NET 4.5.3 and F# 4.0 by default.
 
 ### Getting Started
 
