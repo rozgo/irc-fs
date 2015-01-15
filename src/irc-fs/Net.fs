@@ -19,6 +19,7 @@ let inline private throwIfDisposed<'T> predicate =
 let private no_ssl_error_callback = new RemoteCertificateValidationCallback(fun _ _ _ errors -> errors = SslPolicyErrors.None)
 
 type IrcClient private (server: string, port: int, client: TcpClient, data_stream: Stream) as _this = 
+
     let mutable disposed = false
 
     let msg_event = new Event<IrcMessage>()
@@ -94,36 +95,36 @@ type IrcClient private (server: string, port: int, client: TcpClient, data_strea
     member this.MessageReceived = msg_event.Publish
     
     member this.Connected = 
-        throwIfDisposed disposed
+        throwIfDisposed<IrcClient> disposed
         client.Client.Connected
     
     member this.StartEvent() = 
-        throwIfDisposed disposed
+        throwIfDisposed<IrcClient> disposed
         msg_processor.Post true
 
     member this.StopEvent() =
-        throwIfDisposed disposed
+        throwIfDisposed<IrcClient> disposed
         msg_processor.Post false
 
     member this.ReadLine() = 
-        throwIfDisposed disposed
+        throwIfDisposed<IrcClient> disposed
         if !msg_processor_active then invalidOp "This operation cannot be performed while the MessageReceived event is active"
 
         reader.ReadLine()
 
     member this.ReadLineAsync() = 
-        throwIfDisposed disposed
+        throwIfDisposed<IrcClient> disposed
         if !msg_processor_active then invalidOp "This operation cannot be performed while the MessageReceived event is active"
 
         reader.ReadLineAsync() 
         |> Async.AwaitTask
 
     member this.WriteLine(line: string) = 
-        throwIfDisposed disposed
+        throwIfDisposed<IrcClient> disposed
         writer.WriteLine line
             
     member this.WriteLineAsync(line: string) = 
-        throwIfDisposed disposed
+        throwIfDisposed<IrcClient> disposed
         writer.WriteLineAsync line
         |> Async.AwaitIAsyncResult
         |> Async.Ignore
@@ -149,7 +150,6 @@ type IrcClient private (server: string, port: int, client: TcpClient, data_strea
         member this.Dispose() = 
             do disposed <- true
                client.Close()
-               this.StopEvent()
                dispose [ reader; writer; msg_processor ]
 
                match data_stream with
