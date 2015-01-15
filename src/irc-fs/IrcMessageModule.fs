@@ -1,4 +1,4 @@
-﻿namespace IrcFs
+﻿namespace IrcFS
 
 [<AutoOpen>]
 [<CompilationRepresentationAttribute(CompilationRepresentationFlags.ModuleSuffix)>]

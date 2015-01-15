@@ -1,4 +1,4 @@
-# irc-fs
+# irc-fs [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/y0xg9r0jhl9n35uv)](https://ci.appveyor.com/project/JahTheDev/irc-fs)
 
 irc-fs is an IRC client library for F#. It provides a simple framework for connecting to IRC servers, sending and receiving standard IRC messages defined in RFC 2812.
 
@@ -11,9 +11,9 @@ Build irc-fs from the provided .sln file, `build.cmd` or `build.fsx`. The soluti
 irc-fs supports two main modes of operation: synchronous and event-based. An `IrcClient` can be toggled between the modes using `IrcClient.StartEvent` and `IrcClient.StopEvent`. Receiving messages synchronously will not work when the event is active. A basic client might look like the following:
 
 ```fsharp
-#r "IrcFs.dll"
+#r "IrcFS.dll"
 
-open IrcFs
+open IrcFS
 
 let channels = ["#channel"; "#channel2"]
 use client = new Net.IrcClient("irc.example.com", 6667)

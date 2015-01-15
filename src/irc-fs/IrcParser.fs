@@ -1,9 +1,9 @@
-﻿namespace IrcFs
+﻿namespace IrcFS
 
 open FParsec.CharParsers
 open FParsec.Primitives
 
-open IrcFs
+open IrcFS
 
 module internal Parser =
     

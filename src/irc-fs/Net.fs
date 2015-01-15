@@ -1,6 +1,6 @@
-module IrcFs.Net
+module IrcFS.Net
 
-open IrcFs
+open IrcFS
 
 open System
 open System.IO

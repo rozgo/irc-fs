@@ -7,10 +7,11 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>694ab3b0-8929-4f78-ab72-55f29eb48a36</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>IrcFs</RootNamespace>
+    <RootNamespace>IrcFS</RootNamespace>
     <AssemblyName>IrcFS</AssemblyName>
     <TargetFrameworkVersion>v4.5.3</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
+    <BaseIntermediateOutputPath>..\..\obj\</BaseIntermediateOutputPath>
     <Name>irc-fs</Name>
     <TargetFrameworkProfile />
   </PropertyGroup>

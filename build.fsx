@@ -18,8 +18,8 @@ let releaseNotes = ReleaseNotesHelper.parseReleaseNotes (File.ReadLines "RELEASE
 
 let solutionFile = "irc-fs.sln"
 
-let buildDir = "./bin/"
-let nugetDir = "./.nuget/"
+let buildDir = "./bin"
+let nugetDir = "./.nuget"
 
 Target "Clean" (fun _ ->
     CleanDirs [buildDir]
@@ -29,12 +29,12 @@ Target "RestorePackages" (fun _ ->
     !! "./src/**/packages.config"
     |> Seq.iter(
         RestorePackage (fun p -> 
-            { p with ToolPath = nugetDir + "NuGet.exe" })
+            { p with ToolPath = nugetDir @@ "NuGet.exe" })
        )
 )
 
 Target "AssemblyInfo" (fun _ ->
-    let filename = "./src/" + projectName + "/AssemblyInfo.fs"
+    let filename = "./src" @@ projectName @@ "AssemblyInfo.fs"
     CreateFSharpAssemblyInfo filename
         [ Attribute.Title projectName
           Attribute.Product projectName
@@ -46,7 +46,7 @@ Target "AssemblyInfo" (fun _ ->
 
 Target "CopyLicense" (fun _ ->
     [ "LICENSE.md" ]
-    |> CopyTo (buildDir + "Release")
+    |> CopyTo (buildDir @@ "Release")
 )
 
 Target "Build" (fun _ ->
@@ -64,4 +64,6 @@ Target "All" DoNothing
     ==> "Build"
     ==> "All"
 
-RunTargetOrDefault "All"
+let target = getBuildParamOrDefault "target" "All"
+
+RunTargetOrDefault target

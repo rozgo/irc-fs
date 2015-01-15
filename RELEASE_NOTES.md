@@ -1,3 +1,8 @@
+### 1.0.5 - January 14 2015
+* Added appveyor.yml
+* Normalized assembly and root namespace naming
+* Parameterized build scripts
+
 ### 1.0.4 - January 14 2015
 * Added the FAKE build system
 

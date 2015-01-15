@@ -1,4 +1,4 @@
-﻿namespace IrcFs
+﻿namespace IrcFS
 
 open System.Text
 open Microsoft.FSharp.Core.Printf
