@@ -1,3 +1,7 @@
+### 1.0.7 - January 16 2015
+* Added support for building under Mono
+* Added .travis.yml
+
 ### 1.0.6 - January 15 2015
 * Fixed `IrcClient.Dispose` throwing an exception
 * Fixed exception messages for `IrcClient` methods that throw `ObjectDisposedException`
