@@ -1,4 +1,4 @@
-# irc-fs [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/y0xg9r0jhl9n35uv)](https://ci.appveyor.com/project/JahTheDev/irc-fs) [![Travis build status](https://travis-ci.org/JahTheDev/irc-fs.png)](https://travis-ci.org/JahTheDev/irc-fs)
+# irc-fs [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/6nviekmy11m43dpa)](https://ci.appveyor.com/project/JahTheDev/irc-fs) [![Travis build status](https://travis-ci.org/JahTheDev/irc-fs.png)](https://travis-ci.org/JahTheDev/irc-fs)
 
 irc-fs is an IRC client library for F#. It provides a simple framework for connecting to IRC servers, sending and receiving standard IRC messages defined in RFC 2812.
 

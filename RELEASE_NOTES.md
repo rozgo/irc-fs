@@ -1,3 +1,6 @@
+### 1.0.8 - January 16 2015
+* Fixed a bug that caused `IrcClient` to throw an exception during initialization under some conditions
+
 ### 1.0.7 - January 16 2015
 * Added support for building under Mono
 * Added .travis.yml

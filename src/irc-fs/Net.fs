@@ -18,7 +18,7 @@ let inline private throwIfDisposed<'T> predicate =
 
 let private no_ssl_error_callback = new RemoteCertificateValidationCallback(fun _ _ _ errors -> errors = SslPolicyErrors.None)
 
-type IrcClient private (server: string, port: int, client: TcpClient, data_stream: Stream) as _this = 
+type IrcClient private (server: string, port: int, client: TcpClient, data_stream: Stream) = 
 
     let mutable disposed = false
 
@@ -31,7 +31,7 @@ type IrcClient private (server: string, port: int, client: TcpClient, data_strea
     let msg_processor = MailboxProcessor<bool>.Start(fun inbox ->
         let rec loop enabled =
             async {
-                if _this.Connected then 
+                if client.Client.Connected then 
                     match enabled with
                     | false ->
                         let! new_state = inbox.Receive()
