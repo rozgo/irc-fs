@@ -1,7 +1,8 @@
 ﻿namespace IrcFS
 
-open System.Text
 open Microsoft.FSharp.Core.Printf
+
+open System.Text
 
 type IrcRecipient = 
     | Channel of chstring: string
@@ -19,7 +20,7 @@ type IrcRecipient =
 
 type IrcMessage = 
     | IrcMessage of prefix: IrcRecipient option * cmd: string * args: string list
-    
+
     override this.ToString() = 
         let concat_irc_args args = 
             let sb = new StringBuilder()
@@ -41,15 +42,15 @@ type IrcMessage =
             sprintf "%s%s" prefix cmd
         | IrcMessage(_, cmd, args) -> 
             sprintf "%s%s %s" prefix cmd (concat_irc_args args)
-    
+
     member this.Prefix = 
         match this with
         | IrcMessage(prefix, _, _) -> prefix
-    
+
     member this.Command = 
         match this with
         | IrcMessage(_, cmd, _) -> cmd
-    
+
     member this.Arguments = 
         match this with
         | IrcMessage(_, _, args) -> args

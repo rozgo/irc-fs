@@ -55,8 +55,9 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="IrcMessage.fs" />
-    <Compile Include="IrcParser.fs" />
+    <Compile Include="Parser.fs" />
     <Compile Include="IrcMessageModule.fs" />
+    <Compile Include="ResponseCode.fs" />
     <Compile Include="Net.fs" />
     <Content Include="packages.config" />
   </ItemGroup>

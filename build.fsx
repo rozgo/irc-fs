@@ -1,12 +1,13 @@
 #I @"packages/FAKE/tools"
 #r @"FakeLib.dll"
 
-open System.IO
-
 open Fake
 open Fake.MSBuild
 open Fake.AssemblyInfoFile
 open Fake.ReleaseNotesHelper
+
+open System
+open System.IO
 
 let projectName = "irc-fs"
 
@@ -21,8 +22,15 @@ let solutionFile = "irc-fs.sln"
 let buildDir = "./bin"
 let nugetDir = "./.nuget"
 
+let isAppveyorBuild = environVar "APPVEYOR" <> null
+let appveyorBuildVersion = sprintf "%s-a%s" releaseNotes.AssemblyVersion (DateTime.UtcNow.ToString "yyMMddHHmm")
+
 Target "Clean" (fun _ ->
     CleanDirs [buildDir]
+)
+
+Target "AppveyorBuildVersion" (fun _ ->
+    Shell.Exec("appveyor", sprintf "UpdateBuild -Version \"%s\"" appveyorBuildVersion) |> ignore
 )
 
 Target "RestorePackages" (fun _ ->
@@ -58,6 +66,7 @@ Target "Build" (fun _ ->
 Target "All" DoNothing
 
 "Clean"
+    =?> ("AppveyorBuildVersion", isAppveyorBuild)
     ==> "RestorePackages"
     ==> "AssemblyInfo"
     ==> "CopyLicense"

@@ -8,7 +8,6 @@ open System.Net.Security
 open System.Net.Sockets
 open System.Security.Authentication
 open System.Security.Cryptography.X509Certificates
-open System.Threading
 
 let inline private objDisposed<'T> = raise <| ObjectDisposedException(typeof<'T>.FullName)
 let inline private dispose(garbage: seq<IDisposable>) = garbage |> Seq.iter(fun disposable -> disposable.Dispose())
@@ -28,19 +27,21 @@ type IrcClient private (server: string, port: int, client: TcpClient, data_strea
     let writer = new StreamWriter(data_stream, AutoFlush = true)
 
     let msg_processor_active = ref false
-    let msg_processor = MailboxProcessor<bool>.Start(fun inbox ->
+    let msg_processor = MailboxProcessor<bool * AsyncReplyChannel<unit>>.Start(fun inbox ->
         let rec loop enabled =
             async {
                 if client.Client.Connected then 
                     match enabled with
                     | false ->
-                        let! new_state = inbox.Receive()
+                        let! new_state, channel = inbox.Receive()
                         msg_processor_active := new_state
+                        channel.Reply()
                         do! loop new_state
                     | true ->
                         if inbox.CurrentQueueLength > 0 then
-                            let! new_state = inbox.Receive()
+                            let! new_state, channel = inbox.Receive()
                             msg_processor_active := new_state
+                            channel.Reply()
                             do! loop new_state
                         else
                             let! message = reader.ReadLineAsync() |> Async.AwaitTask
@@ -100,11 +101,11 @@ type IrcClient private (server: string, port: int, client: TcpClient, data_strea
     
     member this.StartEvent() = 
         throwIfDisposed<IrcClient> disposed
-        msg_processor.Post true
+        msg_processor.PostAndReply(fun channel -> true, channel)
 
     member this.StopEvent() =
         throwIfDisposed<IrcClient> disposed
-        msg_processor.Post false
+        msg_processor.PostAndReply(fun channel -> false, channel)
 
     member this.ReadLine() = 
         throwIfDisposed<IrcClient> disposed

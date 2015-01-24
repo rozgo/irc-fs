@@ -1,3 +1,8 @@
+### 1.1.0 - January 24 2015
+* Added constants and new APIs for numeric response codes
+* Fixed a bug where `IrcClient.StopEvent` followed by a read operation on `IrcClient` would result in a race condition and crash
+* Improved integration with Appveyor
+
 ### 1.0.8 - January 16 2015
 * Fixed a bug that caused `IrcClient` to throw an exception during initialization under some conditions
 

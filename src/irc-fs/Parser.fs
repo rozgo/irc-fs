@@ -6,7 +6,7 @@ open FParsec.Primitives
 open IrcFS
 
 module internal Parser =
-    
+
     module private Internal = 
         let word = many1Satisfy ((<>) ' ')
 

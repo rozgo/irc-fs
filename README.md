@@ -4,7 +4,7 @@ irc-fs is an IRC client library for F#. It provides a simple framework for conne
 
 ### Installation
 
-Build irc-fs from the provided .sln file, `build.cmd` or `build.fsx`. The solution is configured for .NET 4.5.3 and F# 4.0 by default.
+Build irc-fs from the provided .sln file, `build.cmd` or `build.sh`. The solution is configured for .NET 4.5.3 and F# 4.0 by default.
 
 ### Getting Started
 
@@ -22,16 +22,18 @@ do client.WriteMessage (IrcMessage.nick "nickname")
    client.WriteMessage (IrcMessage.user "username" "0" "real name")
 
 // an example of processing messages synchronously
-let rec process_motd () =
-    match client.ReadMessage () with
-    // assume it's safe to join channels after RPL_ENDOFMOTD or ERR_NOMOTD
-    | IrcMessage(_, "376", _) | IrcMessage(_, "422", _) -> 
-		client.WriteMessage (IrcMessage.join channels)
-    | IrcMessage(_, "PING", value) -> 
-		client.WriteMessage (IrcMessage.pong (List.exactlyOne value))
-        process_motd ()
-    | _ -> process_motd ()
-do process_motd ()
+let process_motd () =
+    let rec loop () =
+		match client.ReadMessage () with
+		// assume it's safe to join channels after RPL_ENDOFMOTD or ERR_NOMOTD
+		| IrcMessage(_, ResponseCode.RPL_ENDOFMOTD, _)
+		| IrcMessage(_, ResponseCode.ERR_NOMOTD, _) ->
+			client.WriteMessage (IrcMessage.join channels)
+		| IrcMessage(_, "PING", value) -> 
+			client.WriteMessage (IrcMessage.pong (List.exactlyOne value))
+			loop ()
+		| _ -> loop ()
+	loop ()
 
 // an example of event processing style
 // responding to PING messages is the minimum requirement for a client
@@ -40,7 +42,8 @@ client.MessageReceived
 |> Event.add(fun message -> IrcMessage.pong (List.exactlyOne message.Arguments)
 							|> client.WriteMessage)
 
-client.StartEvent()
+do process_motd()
+   client.StartEvent()
 ```
 
 ### License
